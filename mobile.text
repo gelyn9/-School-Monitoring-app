@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1976d2>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Activity Monitoring System</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* ===== MATERIAL DESIGN STYLE ===== */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Roboto, system-ui, Arial, sans-serif;
+  background: #f5f5f5;
+  color: #212121;
+}
+
+/* APP BAR */
+header {
+  background: #1976d2;
+  color: white;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon { font-size: 28px; }
+
+header h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+header p {
+  margin: 0;
+  font-size: 12px;
+  opacity: .9;
+}
+
+/* MAIN CONTENT */
+main {
+  padding: 16px;
+  padding-bottom: 90px;
+}
+
+.tab { display: none; }
+.tab.active { display: block; }
+
+/* CARDS */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 13px;
+  color: #616161;
+}
+
+.card p {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+/* CHARTS */
+.charts {
+  margin-top: 20px;
+  display: grid;
+  gap: 20px;
+}
+
+canvas {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  border-collapse: collapse;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+th {
+  background: #eeeeee;
+  color: #616161;
+  text-transform: uppercase;
+}
+
+/* LISTS */
+ul {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  list-style: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+
+li {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+select {
+  width: 100%;
+  padding: 6px;
+  margin-top: 6px;
+}
+
+/* BOTTOM NAV */
+nav {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  background: white;
+  border-radius: 30px;
+  display: flex;
+  justify-content: space-around;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+
+nav button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 0;
+  font-size: 11px;
+  color: #616161;
+}
+
+nav button:hover { color: #1976d2; }
+
+/* DESKTOP */
+@media (min-width: 768px) {
+  nav { position: static; border-radius: 0; }
+  main { padding-bottom: 20px; }
+  .cards { grid-template-columns: repeat(4, 1fr); }
+  .charts { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="icon">🎓</div>
+    <div>
+      <h1>School Activity Monitoring</h1>
+      <p>Student & Performance Tracking</p>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button onclick="showTab('dashboard')">🏠<br>Home</button>
+  <button onclick="showTab('students')">👩‍🎓<br>Students</button>
+  <button onclick="showTab('attendance')">✅<br>Attendance</button>
+  <button onclick="showTab('schedule')">📅<br>Schedule</button>
+  <button onclick="showTab('teachers')">👩‍🏫<br>Teachers</button>
+</nav>
+
+<main>
+
+<section id="dashboard" class="tab active">
+  <div class="cards">
+    <div class="card"><h3>Total Students</h3><p id="totalStudents"></p></div>
+    <div class="card"><h3>Present Today</h3><p id="presentToday"></p></div>
+    <div class="card"><h3>Average Grade</h3><p id="averageGrade"></p></div>
+    <div class="card"><h3>Total Classes</h3><p id="totalClasses"></p></div>
+  </div>
+
+  <div class="charts">
+    <canvas id="attendanceChart"></canvas>
+    <canvas id="performanceChart"></canvas>
+  </div>
+</section>
+
+<section id="students" class="tab">
+  <h3>Students</h3>
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Grade</th><th>Status</th><th>Average</th></tr>
+    </thead>
+    <tbody id="studentTable"></tbody>
+  </table>
+</section>
+
+<section id="attendance" class="tab">
+  <h3>Attendance</h3>
+  <ul id="attendanceList"></ul>
+</section>
+
+<section id="schedule" class="tab">
+  <h3>Class Schedule</h3>
+  <ul id="classList"></ul>
+</section>
+
+<section id="teachers" class="tab">
+  <h3>Teachers</h3>
+  <ul id="teacherList"></ul>
+</section>
+
+</main>
+
+<script>
+const students = [
+ {id:1,name:"Emma Johnson",grade:"12th",status:"present",avg:92},
+ {id:2,name:"Liam Smith",grade:"11th",status:"present",avg:88},
+ {id:3,name:"Olivia Brown",grade:"10th",status:"late",avg:85},
+ {id:4,name:"Noah Davis",grade:"12th",status:"present",avg:90},
+ {id:5,name:"Ava Wilson",grade:"11th",status:"absent",avg:78}
+];
+
+const classes = [
+ "Mathematics - Room 101",
+ "Physics - Lab 205",
+ "English - Room 103",
+ "Chemistry - Lab 206"
+];
+
+const teachers = [
+ "Dr. Sarah Johnson",
+ "Prof. Michael Chen",
+ "Ms. Emily Davis",
+ "Dr. Robert Lee"
+];
+
+function showTab(id){
+ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+
+function updateDashboard(){
+ totalStudents.textContent = students.length;
+ presentToday.textContent = students.filter(s=>s.status==="present").length;
+ averageGrade.textContent = Math.round(students.reduce((a,s)=>a+s.avg,0)/students.length);
+ totalClasses.textContent = classes.length;
+}
+
+function renderStudents(){
+ studentTable.innerHTML="";
+ students.forEach(s=>{
+  studentTable.innerHTML+=`<tr><td>${s.name}</td><td>${s.grade}</td><td>${s.status}</td><td>${s.avg}</td></tr>`;
+ });
+}
+
+function renderAttendance(){
+ attendanceList.innerHTML="";
+ students.forEach(s=>{
+  attendanceList.innerHTML+=`
+   <li>${s.name}
+    <select onchange="s.status=this.value;updateDashboard()">
+     <option ${s.status==="present"?"selected":""}>present</option>
+     <option ${s.status==="absent"?"selected":""}>absent</option>
+     <option ${s.status==="late"?"selected":""}>late</option>
+    </select>
+   </li>`;
+ });
+}
+
+classes.forEach(c=>classList.innerHTML+=`<li>${c}</li>`);
+teachers.forEach(t=>teacherList.innerHTML+=`<li>${t}</li>`);
+
+updateDashboard();
+renderStudents();
+renderAttendance();
+
+new Chart(attendanceChart,{
+ type:"bar",
+ data:{
+  labels:["Mon","Tue","Wed","Thu","Fri"],
+  datasets:[
+   {label:"Present",data:[145,142,148,140,147],backgroundColor:"#1976d2"},
+   {label:"Absent",data:[5,8,2,10,3],backgroundColor:"#e53935"}
+  ]
+ }
+});
+
+new Chart(performanceChart,{
+ type:"line",
+ data:{
+  labels:["Math","Science","English","History","Arts"],
+  datasets:[{label:"Average Score",data:[85,88,82,86,90],borderColor:"#1976d2"}]
+ }
+});
+</script>
+
+</body>
+</html>
